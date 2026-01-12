@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "ChawpVendor",
+    "slug": "chawpvendor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/vendor_logo.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/vendor_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chawp.vendor"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/vendor_logo.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.chawp.vendor"
+    },
+    "web": {
+      "favicon": "./assets/vendor_logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "58aff2ff-c616-4e05-98cd-5a0e09c97af0"
+      }
+    }
+  }
+}
