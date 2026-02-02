@@ -26,12 +26,17 @@ export default function MenuPage() {
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
-    if (vendor) {
+    if (vendor?.id) {
       loadMeals();
     }
-  }, [vendor]);
+  }, [vendor?.id]);
 
   const loadMeals = async () => {
+    if (!vendor?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const result = await fetchVendorMeals(vendor.id);
@@ -62,7 +67,7 @@ export default function MenuPage() {
         "Updated",
         `${meal.title} is now ${
           newStatus === "available" ? "available" : "unavailable"
-        }`
+        }`,
       );
       loadMeals();
     } else {
@@ -87,14 +92,16 @@ export default function MenuPage() {
               item.status === "available"
                 ? styles.statusAvailable
                 : styles.statusUnavailable,
-            ]}>
+            ]}
+          >
             <Text
               style={[
                 styles.statusText,
                 item.status === "available"
                   ? styles.statusTextAvailable
                   : styles.statusTextUnavailable,
-              ]}>
+              ]}
+            >
               {item.status === "available" ? "Available" : "Unavailable"}
             </Text>
           </View>
@@ -178,6 +185,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: spacing.lg,
+    paddingTop: 56,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

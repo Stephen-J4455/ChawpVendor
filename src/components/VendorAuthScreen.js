@@ -8,15 +8,18 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { colors, spacing, radii, typography } from "../theme";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, spacing, radii } from "../theme";
 
 export default function VendorAuthScreen({ onSignIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = async () => {
     if (!email || !password) {
@@ -31,142 +34,175 @@ export default function VendorAuthScreen({ onSignIn }) {
 
     if (!result.success) {
       setError(result.error || "Failed to sign in");
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
-    <LinearGradient
-      colors={[colors.background, colors.surface, colors.card]}
-      style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar style="light" />
       <KeyboardAvoidingView
+        style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}>
-        <View style={styles.content}>
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoIcon}>🏪</Text>
+            <View style={styles.iconContainer}>
+              <Ionicons name="restaurant" size={60} color={colors.accent} />
             </View>
-            <Text style={styles.title}>CHAWP VENDOR</Text>
-            <Text style={styles.subtitle}>
-              Manage your restaurant orders & menu
-            </Text>
+            <Text style={styles.title}>Chawp Vendor</Text>
+            <Text style={styles.subtitle}>Restaurant Management</Text>
           </View>
 
           <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>📧 Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="vendor@restaurant.com"
-                placeholderTextColor={colors.textMuted}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!loading}
-              />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="mail-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.textSecondary}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  editable={!loading}
+                />
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>🔒 Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!loading}
-              />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color={colors.textSecondary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.textSecondary}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoComplete="password"
+                  editable={!loading}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {error ? (
               <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>⚠️ {error}</Text>
+                <Ionicons name="alert-circle" size={20} color={colors.error} />
+                <Text style={styles.errorText}>{error}</Text>
               </View>
             ) : null}
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
+              style={[
+                styles.signInButton,
+                loading && styles.signInButtonDisabled,
+              ]}
               onPress={handleSignIn}
-              disabled={loading}>
-              <LinearGradient
-                colors={[colors.primary, colors.primaryDark]}
-                style={styles.buttonGradient}>
-                {loading ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.buttonText}>Sign In 🚀</Text>
-                )}
-              </LinearGradient>
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <>
+                  <Text style={styles.signInButtonText}>Sign In</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={20}
+                    color={colors.white}
+                  />
+                </>
+              )}
             </TouchableOpacity>
 
             <View style={styles.infoBox}>
-              <Text style={styles.infoText}>🔐 Vendor access only</Text>
+              <Ionicons
+                name="information-circle-outline"
+                size={20}
+                color={colors.info}
+              />
+              <Text style={styles.infoText}>
+                Vendor access only. Manage your restaurant orders and menu.
+              </Text>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: spacing.xxl,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
   },
   header: {
     alignItems: "center",
-    marginBottom: spacing.xxxl * 1.5,
+    marginBottom: spacing.xxl,
   },
-  logoContainer: {
+  iconContainer: {
     width: 100,
     height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.surface,
-    justifyContent: "center",
+    borderRadius: radii.full,
+    backgroundColor: colors.card,
     alignItems: "center",
+    justifyContent: "center",
     marginBottom: spacing.lg,
-    borderWidth: 3,
-    borderColor: colors.accent,
-  },
-  logoIcon: {
-    fontSize: 50,
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: "bold",
     color: colors.textPrimary,
-    letterSpacing: 3,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textSecondary,
-    opacity: 0.9,
-    textAlign: "center",
   },
   form: {
-    backgroundColor: colors.card,
-    borderRadius: radii.xl,
-    padding: spacing.xxl,
-    borderWidth: 1,
-    borderColor: colors.border,
+    width: "100%",
   },
-  inputContainer: {
+  inputGroup: {
     marginBottom: spacing.lg,
   },
   label: {
@@ -175,58 +211,75 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  input: {
-    backgroundColor: colors.surface,
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radii.md,
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  inputIcon: {
+    marginRight: spacing.sm,
+  },
+  input: {
+    flex: 1,
+    height: 50,
     fontSize: 16,
     color: colors.textPrimary,
   },
+  eyeIcon: {
+    padding: spacing.sm,
+  },
   errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.error + "20",
     borderRadius: radii.md,
     padding: spacing.md,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.error + "40",
+    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
   errorText: {
+    flex: 1,
     color: colors.error,
     fontSize: 14,
-    textAlign: "center",
     fontWeight: "500",
   },
-  button: {
-    borderRadius: radii.md,
-    overflow: "hidden",
-    marginTop: spacing.md,
-  },
-  buttonGradient: {
-    padding: spacing.lg,
+  signInButton: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radii.md,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+    gap: spacing.sm,
   },
-  buttonDisabled: {
+  signInButtonDisabled: {
     opacity: 0.6,
   },
-  buttonText: {
-    color: colors.white,
+  signInButtonText: {
     fontSize: 16,
     fontWeight: "600",
+    color: colors.white,
   },
   infoBox: {
-    marginTop: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.accent + "15",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: colors.card,
     borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.accent + "30",
+    padding: spacing.md,
+    marginTop: spacing.xl,
+    gap: spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.info,
   },
   infoText: {
-    color: colors.accent,
+    flex: 1,
     fontSize: 13,
-    textAlign: "center",
-    fontWeight: "500",
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
 });

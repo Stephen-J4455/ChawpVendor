@@ -22,12 +22,16 @@ export default function PayoutsPage() {
   const [payouts, setPayouts] = useState([]);
 
   useEffect(() => {
-    if (vendor) {
+    if (vendor?.id) {
       loadPayouts();
     }
-  }, [vendor]);
+  }, [vendor?.id]);
 
   const loadPayouts = async () => {
+    if (!vendor?.id) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const result = await fetchPayoutHistory(vendor.id);
@@ -97,17 +101,20 @@ export default function PayoutsPage() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
           tintColor={colors.primary}
         />
-      }>
+      }
+    >
       {/* Summary Card */}
       <LinearGradient
         colors={[colors.accent, colors.accentDark]}
-        style={styles.summaryCard}>
+        style={styles.summaryCard}
+      >
         <Text style={styles.summaryLabel}>Total Earnings</Text>
         <Text style={styles.summaryAmount}>GH₵{totalEarnings.toFixed(2)}</Text>
         <Text style={styles.summarySubtext}>
@@ -150,12 +157,14 @@ export default function PayoutsPage() {
                   style={[
                     styles.statusBadge,
                     { backgroundColor: getStatusColor(payout.status) + "20" },
-                  ]}>
+                  ]}
+                >
                   <Text
                     style={[
                       styles.statusText,
                       { color: getStatusColor(payout.status) },
-                    ]}>
+                    ]}
+                  >
                     {payout.status}
                   </Text>
                 </View>
@@ -237,7 +246,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   summaryCard: {
-    margin: spacing.lg,
+    marginTop: 56,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
     padding: spacing.xl,
     borderRadius: radii.lg,
     alignItems: "center",

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { colors, spacing, radii } from "../theme";
 import { useVendorAuth } from "../contexts/VendorAuthContext";
@@ -39,12 +40,17 @@ export default function OrdersPage() {
   ];
 
   useEffect(() => {
-    if (vendor) {
+    if (vendor?.id) {
       loadOrders();
     }
-  }, [vendor, selectedFilter]);
+  }, [vendor?.id, selectedFilter]);
 
   const loadOrders = async () => {
+    if (!vendor?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const filter = filters.find((f) => f.id === selectedFilter);
@@ -138,12 +144,14 @@ export default function OrdersPage() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={[styles.actionButton, styles.declineButton]}
-            onPress={() => handleDeclineOrder(order.id)}>
+            onPress={() => handleDeclineOrder(order.id)}
+          >
             <Text style={styles.declineButtonText}>Decline</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.acceptButton]}
-            onPress={() => handleAcceptOrder(order.id)}>
+            onPress={() => handleAcceptOrder(order.id)}
+          >
             <Text style={styles.acceptButtonText}>Accept</Text>
           </TouchableOpacity>
         </View>
@@ -154,7 +162,8 @@ export default function OrdersPage() {
       return (
         <TouchableOpacity
           style={[styles.actionButton, styles.primaryButton]}
-          onPress={() => handleMarkPreparing(order.id)}>
+          onPress={() => handleMarkPreparing(order.id)}
+        >
           <Text style={styles.primaryButtonText}>Start Preparing</Text>
         </TouchableOpacity>
       );
@@ -164,7 +173,8 @@ export default function OrdersPage() {
       return (
         <TouchableOpacity
           style={[styles.actionButton, styles.successButton]}
-          onPress={() => handleMarkReady(order.id)}>
+          onPress={() => handleMarkReady(order.id)}
+        >
           <Text style={styles.successButtonText}>Mark Ready</Text>
         </TouchableOpacity>
       );
@@ -192,32 +202,42 @@ export default function OrdersPage() {
   return (
     <View style={styles.container}>
       {/* Filters */}
-      <View style={styles.filtersContainer}>
-        {filters.map((filter) => (
-          <TouchableOpacity
-            key={filter.id}
-            style={[
-              styles.filterChip,
-              selectedFilter === filter.id && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedFilter(filter.id)}>
-            <Text
+      <View style={styles.filtersWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContainer}
+        >
+          {filters.map((filter) => (
+            <TouchableOpacity
+              key={filter.id}
               style={[
-                styles.filterText,
-                selectedFilter === filter.id && styles.filterTextActive,
-              ]}>
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+                styles.filterChip,
+                selectedFilter === filter.id && styles.filterChipActive,
+              ]}
+              onPress={() => setSelectedFilter(filter.id)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  selectedFilter === filter.id && styles.filterTextActive,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Orders List */}
       <FlatList
+        style={styles.list}
         data={orders}
         renderItem={renderOrder}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -255,13 +275,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
   },
+  filtersWrapper: {
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingTop: 56,
+  },
   filtersContainer: {
     flexDirection: "row",
     padding: spacing.md,
     gap: spacing.sm,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   filterChip: {
     paddingHorizontal: spacing.md,
@@ -282,6 +305,9 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: colors.white,
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     padding: spacing.md,

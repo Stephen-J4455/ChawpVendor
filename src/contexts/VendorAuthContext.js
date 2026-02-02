@@ -39,7 +39,7 @@ export const VendorAuthProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem(
         VENDOR_STORAGE_KEY,
-        JSON.stringify(vendorData)
+        JSON.stringify(vendorData),
       );
     } catch (error) {
       console.error("Error saving vendor to cache:", error);
@@ -95,6 +95,7 @@ export const VendorAuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
 
       if (event === "SIGNED_IN" && session?.user) {
+        setLoading(true); // Keep loading while fetching vendor profile
         await loadVendorProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
         setVendor(null);

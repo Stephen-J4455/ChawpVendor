@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.chawp.vendor"
+      "bundleIdentifier": "com.stephen_j.ChawpVendor"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,15 +22,31 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.chawp.vendor"
+      "package": "com.stephen_j.ChawpVendor",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "POST_NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
     },
     "web": {
       "favicon": "./assets/vendor_logo.png"
     },
     "extra": {
       "eas": {
-        "projectId": "58aff2ff-c616-4e05-98cd-5a0e09c97af0"
+        "projectId": "aacc20b5-b2df-4ebb-93c7-44c12c3139d1"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/vendor_logo.png",
+          "color": "#ffffff",
+          "sounds": []
+        }
+      ]
+    ]
   }
 }

@@ -76,17 +76,20 @@ export default function DashboardPage() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
           tintColor={colors.primary}
         />
-      }>
+      }
+    >
       {/* Header */}
       <LinearGradient
         colors={[colors.primary, colors.primaryDark]}
-        style={styles.headerGradient}>
+        style={styles.headerGradient}
+      >
         <Text style={styles.greeting}>👋 Welcome back!</Text>
         <Text style={styles.vendorName}>{vendor?.name || "Vendor"}</Text>
       </LinearGradient>
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     padding: spacing.lg,
-    paddingTop: spacing.xxl,
+    paddingTop: 56,
     paddingBottom: spacing.xxl,
   },
   greeting: {

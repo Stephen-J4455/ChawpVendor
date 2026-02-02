@@ -1,5 +1,5 @@
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
   StatusBar as NativeStatusBar,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 import { colors, spacing, radii } from "./src/theme";
@@ -29,10 +29,8 @@ import MenuPage from "./src/pages/MenuPage";
 import PayoutsPage from "./src/pages/PayoutsPage";
 import ProfilePage from "./src/pages/ProfilePage";
 
-const topInset =
-  Platform.OS === "android"
-    ? (NativeStatusBar.currentHeight || 0) + spacing.md
-    : spacing.xl;
+const statusBarHeight =
+  Platform.OS === "android" ? NativeStatusBar.currentHeight || 0 : 0;
 
 const bottomNavItems = [
   { id: "dashboard", label: "Dashboard", icon: "grid-outline" },
@@ -47,6 +45,25 @@ function AppContent() {
     useVendorAuth();
   const { showConfirm, error: showError } = useNotification();
   const [selectedNav, setSelectedNav] = useState("dashboard");
+  const notificationRegistered = useRef(false);
+
+  // Register for push notifications when user is authenticated
+  useEffect(() => {
+    if (user && vendor && !notificationRegistered.current) {
+      notificationRegistered.current = true;
+      registerForNotifications();
+    }
+  }, [user, vendor]);
+
+  const registerForNotifications = async () => {
+    try {
+      const notificationService = await import("./src/services/notifications");
+      await notificationService.registerForPushNotifications();
+      console.log("Vendor notification registration completed");
+    } catch (error) {
+      console.error("Error registering for notifications:", error);
+    }
+  };
 
   const handleSignIn = async (email, password) => {
     const result = await signIn(email, password);
@@ -117,26 +134,47 @@ function AppContent() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ExpoStatusBar style="light" />
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <ExpoStatusBar style="light" translucent backgroundColor="transparent" />
 
-      {/* Header */}
-      <LinearGradient
-        colors={[colors.primary, colors.primaryDark]}
-        style={[styles.header, { paddingTop: topInset }]}>
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.headerTitle}>CHAWP VENDOR</Text>
-            <Text style={styles.headerSubtitle}>
-              {bottomNavItems.find((item) => item.id === selectedNav)?.label ||
-                "Dashboard"}
-            </Text>
-          </View>
+      {/* Page Content - All pages mounted for background loading */}
+      <View style={styles.content}>
+        <View
+          style={
+            selectedNav === "dashboard" ? styles.pageVisible : styles.pageHidden
+          }
+        >
+          <DashboardPage />
         </View>
-      </LinearGradient>
-
-      {/* Page Content */}
-      <View style={styles.content}>{renderPage()}</View>
+        <View
+          style={
+            selectedNav === "orders" ? styles.pageVisible : styles.pageHidden
+          }
+        >
+          <OrdersPage />
+        </View>
+        <View
+          style={
+            selectedNav === "menu" ? styles.pageVisible : styles.pageHidden
+          }
+        >
+          <MenuPage />
+        </View>
+        <View
+          style={
+            selectedNav === "payouts" ? styles.pageVisible : styles.pageHidden
+          }
+        >
+          <PayoutsPage />
+        </View>
+        <View
+          style={
+            selectedNav === "profile" ? styles.pageVisible : styles.pageHidden
+          }
+        >
+          <ProfilePage />
+        </View>
+      </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -146,12 +184,14 @@ function AppContent() {
             <TouchableOpacity
               key={item.id}
               style={styles.navItem}
-              onPress={() => setSelectedNav(item.id)}>
+              onPress={() => setSelectedNav(item.id)}
+            >
               <View
                 style={[
                   styles.navIconContainer,
                   isActive && styles.navIconContainerActive,
-                ]}>
+                ]}
+              >
                 <Ionicons
                   name={item.icon}
                   size={24}
@@ -159,7 +199,8 @@ function AppContent() {
                 />
               </View>
               <Text
-                style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                style={[styles.navLabel, isActive && styles.navLabelActive]}
+              >
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -203,7 +244,8 @@ class ErrorBoundary extends React.Component {
             justifyContent: "center",
             alignItems: "center",
             padding: 20,
-          }}>
+          }}
+        >
           <ExpoStatusBar style="light" />
           <Text style={{ fontSize: 48, marginBottom: 20 }}>⚠️</Text>
           <Text
@@ -212,7 +254,8 @@ class ErrorBoundary extends React.Component {
               color: "#FFFFFF",
               fontWeight: "bold",
               marginBottom: 10,
-            }}>
+            }}
+          >
             App Error
           </Text>
           <Text
@@ -221,7 +264,8 @@ class ErrorBoundary extends React.Component {
               color: "#6C7796",
               textAlign: "center",
               marginBottom: 20,
-            }}>
+            }}
+          >
             {this.state.error?.message || "Unknown error occurred"}
           </Text>
           <TouchableOpacity
@@ -233,7 +277,8 @@ class ErrorBoundary extends React.Component {
             }}
             onPress={() => {
               this.setState({ hasError: false, error: null, errorInfo: null });
-            }}>
+            }}
+          >
             <Text style={{ color: "#FFFFFF", fontWeight: "600" }}>
               Try Again
             </Text>
@@ -279,7 +324,8 @@ export default function App() {
           justifyContent: "center",
           alignItems: "center",
           padding: 20,
-        }}>
+        }}
+      >
         <ExpoStatusBar style="light" />
         <Text style={{ fontSize: 48, marginBottom: 20 }}>⚠️</Text>
         <Text
@@ -288,7 +334,8 @@ export default function App() {
             color: "#FFFFFF",
             fontWeight: "bold",
             marginBottom: 10,
-          }}>
+          }}
+        >
           Initialization Error
         </Text>
         <Text
@@ -297,7 +344,8 @@ export default function App() {
             color: "#6C7796",
             textAlign: "center",
             marginBottom: 20,
-          }}>
+          }}
+        >
           {appError}
         </Text>
         <TouchableOpacity
@@ -310,7 +358,8 @@ export default function App() {
           onPress={() => {
             setAppError(null);
             setAppReady(false);
-          }}>
+          }}
+        >
           <Text style={{ color: "#FFFFFF", fontWeight: "600" }}>Try Again</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -325,7 +374,8 @@ export default function App() {
           backgroundColor: "#070B16",
           justifyContent: "center",
           alignItems: "center",
-        }}>
+        }}
+      >
         <ExpoStatusBar style="light" />
         <ActivityIndicator size="large" color="#2E6BFF" />
         <Text style={{ fontSize: 14, color: "#6C7796", marginTop: 20 }}>
@@ -337,11 +387,13 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <VendorAuthProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </VendorAuthProvider>
+      <SafeAreaProvider>
+        <VendorAuthProvider>
+          <NotificationProvider>
+            <AppContent />
+          </NotificationProvider>
+        </VendorAuthProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }
@@ -398,35 +450,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-  header: {
-    paddingBottom: spacing.lg,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: colors.white,
-    letterSpacing: 2,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.white,
-    opacity: 0.9,
-    marginTop: spacing.xs,
-    fontWeight: "500",
-  },
   content: {
     flex: 1,
+  },
+  pageVisible: {
+    flex: 1,
+  },
+  pageHidden: {
+    display: "none",
   },
   bottomNav: {
     flexDirection: "row",

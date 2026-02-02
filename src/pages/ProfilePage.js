@@ -26,7 +26,11 @@ import {
 
 export default function ProfilePage() {
   const { vendor, signOut, refreshVendor } = useVendorAuth();
-  const { showConfirm, success: showSuccess, error: showError } = useNotification();
+  const {
+    showConfirm,
+    success: showSuccess,
+    error: showError,
+  } = useNotification();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [vendorHours, setVendorHours] = useState([]);
   const [loadingHours, setLoadingHours] = useState(true);
@@ -49,7 +53,7 @@ export default function ProfilePage() {
   const [businessPhone, setBusinessPhone] = useState(vendor?.phone || "");
   const [businessAddress, setBusinessAddress] = useState(vendor?.address || "");
   const [businessDescription, setBusinessDescription] = useState(
-    vendor?.description || ""
+    vendor?.description || "",
   );
 
   // Payment details
@@ -124,12 +128,12 @@ export default function ProfilePage() {
     if (result.success) {
       setVendorHours(
         vendorHours.map((hour) =>
-          hour.id === hourId ? { ...hour, is_closed: newStatus } : hour
-        )
+          hour.id === hourId ? { ...hour, is_closed: newStatus } : hour,
+        ),
       );
       showNotification(
         "success",
-        newStatus ? "Day closed successfully" : "Day opened successfully"
+        newStatus ? "Day closed successfully" : "Day opened successfully",
       );
     } else {
       showNotification("error", "Failed to update status");
@@ -149,7 +153,7 @@ export default function ProfilePage() {
     const result = await updateVendorHourTimes(
       editingHour.id,
       openTime + ":00",
-      closeTime + ":00"
+      closeTime + ":00",
     );
 
     if (result.success) {
@@ -161,8 +165,8 @@ export default function ProfilePage() {
                 open_time: openTime + ":00",
                 close_time: closeTime + ":00",
               }
-            : hour
-        )
+            : hour,
+        ),
       );
       showNotification("success", "Operating hours updated successfully");
       setEditModalVisible(false);
@@ -270,7 +274,7 @@ export default function ProfilePage() {
 
       showNotification(
         "success",
-        "Notification preferences saved successfully"
+        "Notification preferences saved successfully",
       );
     } catch (error) {
       console.error("Error saving preferences:", error);
@@ -313,7 +317,7 @@ export default function ProfilePage() {
       const filePath = `vendors/${fileName}`;
 
       // Convert base64 to binary for upload
-      const base64Data = base64 || uri.split(',')[1]; // Handle both cases
+      const base64Data = base64 || uri.split(",")[1]; // Handle both cases
       const binaryString = atob(base64Data);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -404,7 +408,9 @@ export default function ProfilePage() {
     <View style={styles.wrapper}>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}>
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Cover Photo */}
         <View style={styles.coverPhotoContainer}>
           {vendor?.image ? (
@@ -439,7 +445,8 @@ export default function ProfilePage() {
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={pickAndUploadImage}
-              disabled={uploadingImage}>
+              disabled={uploadingImage}
+            >
               {uploadingImage ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
@@ -487,7 +494,8 @@ export default function ProfilePage() {
                   } else if (item.id === "support") {
                     setShowSupportSection(!showSupportSection);
                   }
-                }}>
+                }}
+              >
                 <View style={styles.menuItemLeft}>
                   <Ionicons
                     name={item.icon}
@@ -558,7 +566,7 @@ export default function ProfilePage() {
                               ? "Closed"
                               : `${hour.open_time?.slice(
                                   0,
-                                  5
+                                  5,
                                 )} - ${hour.close_time?.slice(0, 5)}`}
                           </Text>
                         </View>
@@ -566,7 +574,8 @@ export default function ProfilePage() {
                           <TouchableOpacity
                             style={styles.editButton}
                             onPress={() => handleEditHour(hour)}
-                            disabled={hour.is_closed}>
+                            disabled={hour.is_closed}
+                          >
                             <Ionicons
                               name="create-outline"
                               size={18}
@@ -642,7 +651,8 @@ export default function ProfilePage() {
                       setBusinessAddress(vendor?.address || "");
                       setBusinessDescription(vendor?.description || "");
                       setBusinessModalVisible(true);
-                    }}>
+                    }}
+                  >
                     <Ionicons
                       name="create-outline"
                       size={18}
@@ -669,7 +679,8 @@ export default function ProfilePage() {
                   </Text>
                   <TouchableOpacity
                     style={styles.editDetailsButton}
-                    onPress={() => setBankModalVisible(true)}>
+                    onPress={() => setBankModalVisible(true)}
+                  >
                     <Ionicons
                       name="card-outline"
                       size={18}
@@ -853,7 +864,8 @@ export default function ProfilePage() {
           visible={editModalVisible}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setEditModalVisible(false)}>
+          onRequestClose={() => setEditModalVisible(false)}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
@@ -918,12 +930,14 @@ export default function ProfilePage() {
                   <View style={styles.modalActions}>
                     <TouchableOpacity
                       style={styles.cancelButton}
-                      onPress={() => setEditModalVisible(false)}>
+                      onPress={() => setEditModalVisible(false)}
+                    >
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.saveButton}
-                      onPress={handleSaveHourTimes}>
+                      onPress={handleSaveHourTimes}
+                    >
                       <Text style={styles.saveButtonText}>Save</Text>
                     </TouchableOpacity>
                   </View>
@@ -938,13 +952,15 @@ export default function ProfilePage() {
           visible={businessModalVisible}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setBusinessModalVisible(false)}>
+          onRequestClose={() => setBusinessModalVisible(false)}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Edit Business Details</Text>
                 <TouchableOpacity
-                  onPress={() => setBusinessModalVisible(false)}>
+                  onPress={() => setBusinessModalVisible(false)}
+                >
                   <Ionicons
                     name="close"
                     size={24}
@@ -1028,12 +1044,14 @@ export default function ProfilePage() {
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={styles.cancelButton}
-                    onPress={() => setBusinessModalVisible(false)}>
+                    onPress={() => setBusinessModalVisible(false)}
+                  >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.saveButton}
-                    onPress={handleSaveBusinessDetails}>
+                    onPress={handleSaveBusinessDetails}
+                  >
                     <Text style={styles.saveButtonText}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -1047,7 +1065,8 @@ export default function ProfilePage() {
           visible={bankModalVisible}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setBankModalVisible(false)}>
+          onRequestClose={() => setBankModalVisible(false)}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
@@ -1081,7 +1100,8 @@ export default function ProfilePage() {
                         paymentMethod === "bank" &&
                           styles.paymentMethodButtonActive,
                       ]}
-                      onPress={() => setPaymentMethod("bank")}>
+                      onPress={() => setPaymentMethod("bank")}
+                    >
                       <Ionicons
                         name="card-outline"
                         size={20}
@@ -1096,7 +1116,8 @@ export default function ProfilePage() {
                           styles.paymentMethodText,
                           paymentMethod === "bank" &&
                             styles.paymentMethodTextActive,
-                        ]}>
+                        ]}
+                      >
                         Bank Account
                       </Text>
                     </TouchableOpacity>
@@ -1107,7 +1128,8 @@ export default function ProfilePage() {
                         paymentMethod === "mobile_money" &&
                           styles.paymentMethodButtonActive,
                       ]}
-                      onPress={() => setPaymentMethod("mobile_money")}>
+                      onPress={() => setPaymentMethod("mobile_money")}
+                    >
                       <Ionicons
                         name="phone-portrait-outline"
                         size={20}
@@ -1122,7 +1144,8 @@ export default function ProfilePage() {
                           styles.paymentMethodText,
                           paymentMethod === "mobile_money" &&
                             styles.paymentMethodTextActive,
-                        ]}>
+                        ]}
+                      >
                         Mobile Money
                       </Text>
                     </TouchableOpacity>
@@ -1207,14 +1230,16 @@ export default function ProfilePage() {
                             ]}
                             onPress={() =>
                               setMobileMoneyProvider(provider.toLowerCase())
-                            }>
+                            }
+                          >
                             <Text
                               style={[
                                 styles.providerText,
                                 mobileMoneyProvider ===
                                   provider.toLowerCase() &&
                                   styles.providerTextActive,
-                              ]}>
+                              ]}
+                            >
                               {provider}
                             </Text>
                           </TouchableOpacity>
@@ -1260,12 +1285,14 @@ export default function ProfilePage() {
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={styles.cancelButton}
-                    onPress={() => setBankModalVisible(false)}>
+                    onPress={() => setBankModalVisible(false)}
+                  >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.saveButton}
-                    onPress={handleSaveBankDetails}>
+                    onPress={handleSaveBankDetails}
+                  >
                     <Text style={styles.saveButtonText}>Save</Text>
                   </TouchableOpacity>
                 </View>
@@ -1283,7 +1310,8 @@ export default function ProfilePage() {
             notification.type === "success"
               ? styles.notificationSuccess
               : styles.notificationError,
-          ]}>
+          ]}
+        >
           <Ionicons
             name={
               notification.type === "success"

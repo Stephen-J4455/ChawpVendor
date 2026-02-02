@@ -118,10 +118,115 @@ export async function updateOrderStatus(orderId, status) {
       .from("chawp_orders")
       .update({ status })
       .eq("id", orderId)
-      .select()
+      .select(`
+        *,
+        chawp_vendors(name),
+        chawp_user_profiles(username, full_name, push_token),
+        order_items:chawp_order_items(
+          quantity,
+          meal:chawp_meals(title)
+        )
+      `)
       .single();
 
     if (error) throw error;
+
+    // Send push notification to customer
+    if (data?.chawp_user_profiles) {
+      try {
+        const userName = data.chawp_user_profiles.username || data.chawp_user_profiles.full_name || 'Customer';
+        const firstName = userName.split(' ')[0];
+        const vendorName = data.chawp_vendors?.name || 'the vendor';
+        
+        // Get order items summary
+        const items = data.order_items || [];
+        let itemsSummary = '';
+        
+        if (items.length > 0) {
+          const firstItem = items[0].meal?.title || 'your order';
+          if (items.length === 1) {
+            itemsSummary = `"${firstItem}"`;
+          } else if (items.length === 2) {
+            const secondItem = items[1].meal?.title;
+            itemsSummary = `"${firstItem}" and "${secondItem}"`;
+          } else {
+            itemsSummary = `"${firstItem}" and ${items.length - 1} other item${items.length > 2 ? 's' : ''}`;
+          }
+        } else {
+          itemsSummary = 'your order';
+        }
+
+        // Create personalized messages based on status
+        let title = 'Order Update';
+        let message = '';
+        
+        switch (status) {
+          case 'confirmed':
+            title = '🎉 Order Confirmed';
+            message = `Hello ${firstName}, your order for ${itemsSummary} from ${vendorName} has been confirmed!`;
+            break;
+          case 'preparing':
+            title = '👨‍🍳 Order Being Prepared';
+            message = `Hello ${firstName}, ${vendorName} is now preparing your order for ${itemsSummary}.`;
+            break;
+          case 'ready':
+            title = '✅ Order Ready';
+            message = `Hello ${firstName}, your order for ${itemsSummary} is ready for pickup from ${vendorName}!`;
+            break;
+          case 'cancelled':
+            title = '❌ Order Cancelled';
+            message = `Hello ${firstName}, your order for ${itemsSummary} has been cancelled.`;
+            break;
+          default:
+            message = `Hello ${firstName}, your order status has been updated.`;
+        }
+        
+        // Get all device tokens for this customer from device_tokens table
+        const { data: deviceTokens } = await supabase
+          .from("chawp_device_tokens")
+          .select("push_token")
+          .eq("user_id", data.user_id)
+          .eq("device_type", "customer");
+
+        // Collect all tokens (device_tokens + fallback to user_profiles)
+        const tokens = [
+          ...(deviceTokens || []).map((t) => t.push_token),
+          data.chawp_user_profiles?.push_token,
+        ].filter(Boolean);
+        
+        if (tokens.length > 0) {
+          console.log(`[Vendor] Sending notification to ${tokens.length} customer device(s)`);
+          
+          const { data: notifResult, error: notifError } = await supabase.functions.invoke('send-push-notification', {
+            body: {
+              tokens: tokens,
+              title: title,
+              body: message,
+              data: {
+                orderId: orderId,
+                type: 'order_update',
+                status: status,
+                channelId: 'orders'
+              }
+            }
+          });
+
+          if (notifError) {
+            console.error('[Vendor] Error sending notification:', notifError);
+          } else {
+            console.log('[Vendor] Notification sent successfully:', notifResult);
+          }
+        } else {
+          console.log('[Vendor] No push tokens found for customer');
+        }
+      } catch (notifError) {
+        console.error('[Vendor] Failed to send push notification:', notifError);
+        // Don't fail the whole operation if notification fails
+      }
+    } else {
+      console.log('[Vendor] No user profile found for customer');
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error("Error updating order status:", error);
